@@ -31,9 +31,7 @@ def convo(x,b):
         y_n[ii] = y_padd[ii+b_ind]
     return y_n
  
-def firconv(p):
-    x_n = 256*((np.arange(0,100,1)%50)<10)
-    bk = [1,-0.9]
+def firconv(p,x_n,bk):
     w_n = convo(x_n,bk)
     n = np.arange(0,100)
     if p == 0:
@@ -56,16 +54,17 @@ def firconv(p):
         axs[1].set_xlabel("samples")
         axs[1].grid()
         plt.show()
-    return w_n,x_n
+    return w_n
    
 def restor(w_n,x_n):
-    M = 22
+    M = 99
     r = 0.9
     y_n = np.zeros(len(w_n),dtype=np.complex128)
    
     for n in range(0,len(w_n)):
         for l in range(0, M):
             y_n[n] += (r**l)*w_n[n-l]
+    return y_n
    
 def restor_plot(w_n,x_n):
    
@@ -100,13 +99,41 @@ def restor_plot(w_n,x_n):
     axs[3].grid()
    
     plt.show()
-   
-   
+
+
+def WorstCaseError(w_n,x_n):
+    y_n = restor(w_n,x_n)
+    n_val = np.arange(len(w_n))
+    y_err = np.zeros(len(w_n),dtype=np.complex128)
+    for ii in range(0,len(x_n)):
+        y_err[ii] = y_n[ii] - x_n[ii]
+    max_error = round(max(abs(y_err[0:50])),4)
+    print("The worst case error for y(n) and x(n) is",max_error)
+    print("The plot of the error and the worst case error tells me that the restoration of the signal x(n)")
+    print("still needs to be improved. This improvement could be done by increasing the 'M' value in the")
+    print("restoration filter. This would cause less error. Changing M to nearly 80 causes a difference of around 0.0559.")
+    print("Changing the value of M to nearly the length of x(n) causes the error to be nearly nonexistent.")
+    fig, axs = plt.subplots(3,1, figsize = (12,12))
+    axs[0].stem(n_val,x_n)
+    axs[0].grid()
+    axs[0].set_ylabel("x(n)")
+    axs[0].set_xlabel("Samples")
+    axs[1].stem(n_val,y_n)
+    axs[1].set_ylabel("y(n)")
+    axs[1].set_xlabel("samples")
+    axs[1].grid()
+    axs[2].stem(n_val[0:50],y_err[0:50])
+    axs[2].set_ylabel("error y(n) - x(n)")
+    axs[2].set_xlabel("samples")
+    axs[2].grid()
+    plt.show()
+    
    
 def main():
-    w_n,x_n = firconv(1)
-    # firconv(1")
-    # firconv(0)
+    x_n = 256*((np.arange(0,100,1)%50)<10)
+    bk = [1,-0.9]
+    w_n = firconv(1,x_n,bk)    ##change to 'fircon(0,x_n,bk)' if graphs should be plotted 
     restor_plot(w_n,x_n)
+    WorstCaseError(w_n,x_n)
 if __name__== "__main__":
     main()

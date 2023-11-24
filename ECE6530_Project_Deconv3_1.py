@@ -6,6 +6,9 @@ import numpy as np                  ## Library used for arrays functions, mathem
 # from scipy.fft import fft,ifft
 # import sys
 np.set_printoptions(threshold=np.inf)
+from scipy.io import wavfile
+from scipy.io.wavfile import write
+import winsound
 # import unicodedata
  
 
@@ -30,6 +33,7 @@ def convo(x,b):
     for ii in range(0,len(x)):
         y_n[ii] = y_padd[ii+b_ind]
     return y_n
+
  
 def firconv(p,x_n,bk):
     w_n = convo(x_n,bk)
@@ -100,11 +104,23 @@ def restor_plot(w_n,x_n):
    
     plt.show()
 
+def open_wav(title):
+    fs, data = wavfile.read(title)
+    # print(fs)
+    # print(data)
+    return data,fs
+
+def play_wav(name,fs):
+    winsound.PlaySound(name, winsound.SND_FILENAME)
+
+def new_wav(data,rate):
+    scaled = np.int16(data / np.max(np.abs(data)) * 32767)
+    write('test.wav', rate, scaled)
 
 def WorstCaseError(w_n,x_n):
     y_n = restor(w_n,x_n)
     n_val = np.arange(len(w_n))
-    y_err = np.zeros(len(w_n),dtype=np.complex128)
+    y_err = np.zeros(len(w_n),dtype=np.complex128) 
     for ii in range(0,len(x_n)):
         y_err[ii] = y_n[ii] - x_n[ii]
     max_error = round(max(abs(y_err[0:50])),4)
@@ -127,13 +143,59 @@ def WorstCaseError(w_n,x_n):
     axs[2].set_xlabel("samples")
     axs[2].grid()
     plt.show()
+
+def echoFIR(x_n,td,fs,echo_amp):
+    samp_delay = int(fs*td)
+    bk = np.zeros(samp_delay,dtype=float)
+    bk[0] = 1
+    bk[samp_delay - 1] = echo_amp
+    # print(samp_delay)
+    # print(len(bk))
+    echo = np.convolve(x_n,bk)
+    return echo
     
+   
+def print_echo(x_n,td,fs,echo_amp):
+    samp_delay = int(fs*td)
+    bk = np.zeros(samp_delay,dtype=float)
+    bk[0] = 1
+    bk[samp_delay - 1] = echo_amp
+    # print(samp_delay)
+    # print(len(bk))
+    echo = np.convolve(x_n,bk)
+    n_samp = np.arange(len(echo))
+    n_val = np.arange(len(x_n))
+    fig, axs = plt.subplots(2,1, figsize = (12,12))
+    axs[0].stem(n_val,x_n)
+    axs[0].grid()
+    axs[0].set_ylabel("x(n)")
+    axs[0].set_xlabel("Samples")
+    axs[1].stem(n_samp,echo)
+    axs[1].set_ylabel("y(n)")
+    axs[1].set_xlabel("samples")
+    axs[1].grid()
+    plt.show()   
    
 def main():
     x_n = 256*((np.arange(0,100,1)%50)<10)
     bk = [1,-0.9]
-    w_n = firconv(1,x_n,bk)    ##change to 'fircon(0,x_n,bk)' if graphs should be plotted 
-    restor_plot(w_n,x_n)
-    WorstCaseError(w_n,x_n)
+    # orig_wav = 'pluck_55hz.wav'    ## generated on Audacity
+    orig_wav = 'boing_x.wav'       ##downloaded free at https://www.wavsource.com/snds_2020-10-01_3728627494378403/sfx/boing_x.wav
+    # w_n = firconv(1,x_n,bk)    ##change to 'fircon(0,x_n,bk)' if graphs should be plotted 
+    # restor_plot(w_n,x_n)
+    # WorstCaseError(w_n,x_n)
+    fs = 8000
+    td = 0.2
+    echo_amp = 0.5      ##original specified in lab is 0.9
+    # echo = echoFIR(x_n,td,fs)
+    
+    
+    
+    data_orig,fs  = open_wav(orig_wav)
+    # echo_data = print_echo(data_orig,td,fs,echo_amp)
+    echo_data = echoFIR(data_orig,td,fs,echo_amp)
+    # play_wav(orig_wav,fs)
+    new_wav(echo_data,fs)
+    play_wav('test.wav',fs)
 if __name__== "__main__":
     main()

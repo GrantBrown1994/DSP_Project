@@ -10,6 +10,7 @@ from scipy.io.wavfile import write
 import pyaudio
 import wave
 import sys
+import imageio as iio
 
 def compute_fir_filter_output(x_n):
     w_n = np.zeros(len(x_n) + 1)
@@ -69,6 +70,11 @@ def play_wav(title):
         stream.close()    
         p.terminate()
 
+def read_img(title):
+    return iio.imread(title)
+
+def write_img(img, title):
+    iio.imwrite(title, img)
 
 if __name__ == "__main__":
     pass

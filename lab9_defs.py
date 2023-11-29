@@ -11,6 +11,10 @@ import pyaudio
 import wave
 import sys
 import imageio as iio
+import scipy.io
+
+def load_matlab_data(data):
+    return scipy.io.loadmat(data)
 
 def compute_fir_filter_output(x_n):
     w_n = np.zeros(len(x_n) + 1)
@@ -75,6 +79,22 @@ def read_img(title):
 
 def write_img(img, title):
     iio.imwrite(title, img)
+
+def image_filter(image, filter, direction):
+    if direction == "vertical":
+        new_image = np.zeros((image.shape[0]+filter.shape[0]-1, image.shape[1]))
+        image = np.transpose(image)
+        for i in range(0, image.shape[0]):
+            test_1 = image[:,i]
+            test_2 = np.convolve(image[:,i], filter)
+            new_image[:,i] = (np.convolve(image[:,i], filter))
+    elif direction == "horizontal":
+        new_image = np.zeros((image.shape[0], image.shape[1] + filter.shape[0]-1))
+        for i in range(0, image.shape[1]):
+            test_1 = image[i][:]
+            test_2 = np.convolve(image[i,:], filter)
+            new_image[i,:] = np.convolve(image[i,:], filter)
+    return new_image
 
 if __name__ == "__main__":
     pass

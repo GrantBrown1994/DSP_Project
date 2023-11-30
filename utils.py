@@ -1,16 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from pathlib import Path
-import warnings
 from cycler import cycler
 
-dir_ = Path(__file__).parent
+np.set_printoptions(suppress=True, precision=2)
 
-warnings.filterwarnings("ignore")
 default_cycler = cycler(color=["teal", "m", "y", "k"])
-plt.rc("axes", prop_cycle=default_cycler)
-plt.rc("font", **{"size": 8})
-
+plt.rc("axes", prop_cycle=default_cycler, grid=True)
+plt.rc("xtick", direction="inout", labelsize='x-small')
+plt.rc("ytick", direction="inout", labelsize='x-small')
 
 def stem_plot(
     ax: plt.Axes, xd, yd, color="teal", markersize=6, linestyle="solid", label=None
@@ -20,6 +17,26 @@ def stem_plot(
     plt.setp(stemlines, color=color, linestyle=linestyle)
     plt.setp(markerline, markersize=markersize, color=color)
 
+def filter_2d(x1, hn, mode='full'):
+    """
+    Filter a 2D image with the filter hn.
+    """
+    hN = len(hn)
+    xM, xN = x1.shape
+
+    if mode == "full":
+        rM, rN = (xM + hN - 1, xN + hN - 1)
+    else:
+        rM, rN = xM, xN
+
+    result = np.zeros((rM, rN))
+    for i in range(xM):
+        result[i] = np.convolve(x1[i], hn, mode=mode)
+
+    for j in range(rN):
+        result[:, j] = np.convolve(result[:xM, j], hn, mode=mode)
+
+    return result
 
 def upc_decode(bar_w):
     assert len(bar_w) == 59
@@ -60,98 +77,10 @@ def upc_decode(bar_w):
         result.append(idx[0] if len(idx) else -1)
     return result
 
-
-def section_32():
-    """
-    Simple barcode reader for horizontally level images. Reads a single row in the middle of the image.
-    """
-    imagepath = dir_ / "data/HP110v3.png"
-    im = 1 - plt.imread(imagepath)
-
-    m, n = np.arange(len(im)), np.arange(len(im[0]))
-
-    # extract one row to read
-    read_row = int(len(m) / 2) - 1
-    xn = im[read_row]
-
-    hn = np.array([1, -1])
-    yn = np.convolve(xn, hn)
-    edges_n = np.where(np.abs(yn) > 0.5, 1, 0)
-
-    fig, (im1, ax1, ax2, ax3) = plt.subplots(4, 1, figsize=(9, 10))
-    # plot the image, n is the columns which we want on the x-axis
-    n_mesh, m_mesh = np.meshgrid(n, np.flip(m))
-    im1.pcolormesh(n_mesh, m_mesh, im, cmap="binary")
-
-    ax1.plot(np.arange(len(xn)), xn)
-    stem_plot(ax2, np.arange(len(yn)), yn, markersize=3)
-    stem_plot(ax3, np.arange(len(edges_n)), edges_n, markersize=3)
-    ax3.set_ylim([-0.1, 1.5])
-
-    ax1.legend(["$x[n]$"], fontsize=11, loc="upper right", framealpha=1)
-    ax2.legend(["$y[n]$"], fontsize=11, loc="upper right", framealpha=1)
-    ax3.legend([r"$|y[n]| > \tau$"], fontsize=11, loc="upper right", framealpha=1)
-
-    for ax in (im1, ax1, ax2, ax3):
-        ax.set_xlim([n[0], n[-1]])
-        ax.set_xticks([])
-
-    im1.axhline(y=read_row, linestyle="dashed")
-    plt.tight_layout()
-
-    # sample locations where edges occur
-    edge_loc = np.nonzero(edges_n)[0]
-
-    # difference filter on the location signal
-    delta_n = np.convolve(edge_loc, hn, mode="same")
-
-    # determine minimum bar width in pixels
-    # drop all widths greater than 1.5x the min and take the average
-    min_width_group = delta_n[delta_n <= (np.min(delta_n) * 1.5)]
-    min_average = np.average(min_width_group)
-
-    delta_norm_n = np.clip(np.round(delta_n / min_average), 1, 4)
-
-    # find the first sequence of 3 ones, this marks the beginning and end of a valid code
-    delimiter_match = np.convolve(delta_norm_n, [1, 1, 1])
-    delimiter_loc = np.argwhere(delimiter_match == 3).flatten()
-    start_loc, stop_loc = delimiter_loc[0] - 2, delimiter_loc[-1]
-
-    # clip start loc to 0
-    start_loc = 0 if start_loc < 0 else start_loc
-    # clip the sequence at the delimters
-    bar_w = delta_norm_n[start_loc : stop_loc + 1]
-
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(9, 10))
-    stem_plot(ax1, np.arange(len(edge_loc)), edge_loc)
-
-    stem_plot(ax2, np.arange(len(delta_n)), delta_n)
-
-    stem_plot(ax3, np.arange(len(delta_n)), delta_norm_n)
-    ax3.axvspan(start_loc - 0.5, start_loc + 2.5, color="k", alpha=0.3)
-    ax3.axvspan(stop_loc - 2.5, stop_loc + 0.5, color="k", alpha=0.3)
-
-    ax1.grid(True)
-    ax1.set_ylabel("Edge Locations [px]", fontsize=10)
-    ax3.set_xlabel("Edges", fontsize=10)
-    ax2.set_ylabel("Bar Widths [px]", fontsize=10)
-    ax2.grid(True)
-    ax3.set_ylabel("Bar Widths (Normalized)", fontsize=10)
-    ax3.grid(True)
-    ax3.set_yticks([0, 1, 2, 3, 4])
-    plt.tight_layout()
-
-    # check that length is 59
-    assert len(bar_w) == 59
-
-    return upc_decode(bar_w)
-
-
-def section_3b():
+def decode_image(imagepath):
     """
     Improved barcode reader that can read slanted images. 
     """
-    imagepath = dir_ / "data/OFFv3.png"
     im = 1 - plt.imread(imagepath)
 
     m, n = np.arange(len(im)), np.arange(len(im[0]))
@@ -232,8 +161,3 @@ def section_3b():
     assert len(bar_w) == 59
 
     return upc_decode(bar_w)
-    # [0, 4, 6, 5, 0, 0, 7, 0, 3, 1, 9, 5]
-
-
-if __name__ == "__main__":
-    print(section_3b())

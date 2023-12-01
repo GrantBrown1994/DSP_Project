@@ -82,9 +82,10 @@ def decode_image(imagepath):
     Improved barcode reader that can read slanted images. 
     """
     im = 1 - plt.imread(imagepath)
-
+    # num rows and columns of image
     m, n = np.arange(len(im)), np.arange(len(im[0]))
 
+    # find the middle row index, select 20 rows around the middle to average together
     mid_row = int(len(m) / 2)
     read_rows = np.arange(mid_row - 10, mid_row + 10)
 
@@ -105,13 +106,14 @@ def decode_image(imagepath):
 
         delta_n_rows[i, :len(delta_n)] = delta_n
 
+    # average the bar widths together from all rows
     delta_n = np.average(delta_n_rows, axis=0)
-
+    # drop any bar widths that are zero.
     delta_n = delta_n[delta_n > 0]
 
     # determine minimum bar width in pixels
-    # drop all widths greater than 2x the min and take the average
-    min_width_group = delta_n[delta_n <= (np.min(delta_n) * 2)]
+    # drop all widths greater than 1.5x the min and take the average
+    min_width_group = delta_n[delta_n <= (np.min(delta_n) * 1.5)]
     min_average = np.average(min_width_group)
 
     delta_norm_n = np.clip(np.round(delta_n / min_average), 1, 4)
@@ -126,31 +128,24 @@ def decode_image(imagepath):
     # clip the sequence at the delimters
     bar_w = delta_norm_n[start_loc : stop_loc + 1]
 
-    fig, (im1, ax1, ax2) = plt.subplots(3, 1, figsize=(12, 7))
+    fig, (im1, ax1, ax2) = plt.subplots(3, 1, figsize=(7, 8))
     # plot the image, n is the columns which we want on the x-axis
     n_mesh, m_mesh = np.meshgrid(n, np.flip(m))
     im1.pcolormesh(n_mesh, m_mesh, im, cmap="binary")
 
-    stem_plot(ax1, edge_loc_i, delta_n)
-    stem_plot(ax2, edge_loc_i, delta_norm_n)
+    stem_plot(ax1, np.arange(len(delta_n)), delta_n)
+    stem_plot(ax2, np.arange(len(delta_n)), delta_norm_n)
 
-    ax2.axvspan(
-        edge_loc_i[start_loc] - 0.5, edge_loc_i[start_loc] + 4, color="k", alpha=0.3
-    )
-    ax2.axvspan(
-        edge_loc_i[stop_loc] - 4, edge_loc_i[stop_loc] + 0.5, color="k", alpha=0.3
-    )
-
-    ax1.legend(["$x[n]$"], fontsize=11, loc="upper right", framealpha=1)
-    ax2.legend(["$y[n]$"], fontsize=11, loc="upper right", framealpha=1)
+    ax1.legend(["$\Delta[n]$"], fontsize=11, loc="upper right", framealpha=1)
+    ax2.legend(["$\Delta_N[n]$"], fontsize=11, loc="upper right", framealpha=1)
     
-    for ax in (ax1, ax2):
-        ax.set_xlim([n[0], n[-1]])
+    for ax in (im1, ax1, ax2):
         ax.set_xticks([])
 
     im1.axhline(y=mid_row, linestyle="dashed")
     plt.tight_layout()
 
+    im1.grid(False)
     ax1.grid(True)
     ax1.set_ylabel("Bar Widths [px]", fontsize=10)
     ax2.grid(True)

@@ -3,6 +3,7 @@ import numpy as np
 from scipy import signal
 import math as m
 import os
+from cycler import cycler
 
 cwd = os.getcwd()
 np.set_printoptions(threshold=np.inf)
@@ -13,6 +14,22 @@ import wave
 import sys
 import imageio as iio
 import scipy.io
+
+np.set_printoptions(suppress=True, precision=2)
+
+default_cycler = cycler(color=["teal", "m", "y", "k"])
+plt.rc("axes", prop_cycle=default_cycler, grid=True)
+plt.rc("xtick", direction="inout", labelsize="x-small")
+plt.rc("ytick", direction="inout", labelsize="x-small")
+
+
+def stem_plot(
+    ax: plt.Axes, xd, yd, color="teal", markersize=6, linestyle="solid", label=None
+):
+    """Create customized stem plot on axes with data (xd, yd)"""
+    markerline, stemlines, baseline = ax.stem(xd, yd, label=label)
+    plt.setp(stemlines, color=color, linestyle=linestyle)
+    plt.setp(markerline, markersize=markersize, color=color)
 
 
 def load_matlab_data(data):

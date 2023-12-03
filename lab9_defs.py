@@ -96,5 +96,26 @@ def image_filter(image, filter, direction):
             new_image[i,:] = np.convolve(image[i,:], filter)
     return new_image
 
+def filter_2d(x1, hn, mode='full'):
+    """
+    Filter a 2D image with the filter hn.
+    """
+    hN = len(hn)
+    xM, xN = x1.shape
+
+    if mode == "full":
+        rM, rN = (xM + hN - 1, xN + hN - 1)
+    else:
+        rM, rN = xM, xN
+
+    result = np.zeros((rM, rN))
+    for i in range(xM):
+        result[i] = np.convolve(x1[i], hn, mode=mode)
+
+    for j in range(rN):
+        result[:, j] = np.convolve(result[:xM, j], hn, mode=mode)
+
+    return result
+
 if __name__ == "__main__":
     pass

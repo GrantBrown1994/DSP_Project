@@ -9,10 +9,7 @@ This project is implemented in Python 3.11. To install the dependencies for this
 4. In the newly created environment, install the required packages from the requirements.txt file included with the project files.  
 `(.venv) > pip install -r requirements.txt`
 5. Open the report with Jupyter Notebooks.  
-`(.venv) > jupyter notebook lab9/lab9.ipynb`  
-Or,  
-`(.venv) > jupyter notebook lab10/lab10.ipynb`
-6. The notebook should open in the default browser. 
+`(.venv) > jupyter notebook report.ipynb`  
 
 7. To generate the .html version of the report,  
-`(.venv) > jupyter nbconvert --to html lab9/lab9.ipynb`
+`(.venv) > jupyter nbconvert --to html report.ipynb`

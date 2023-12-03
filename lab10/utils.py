@@ -6,8 +6,9 @@ np.set_printoptions(suppress=True, precision=2)
 
 default_cycler = cycler(color=["teal", "m", "y", "k"])
 plt.rc("axes", prop_cycle=default_cycler, grid=True)
-plt.rc("xtick", direction="inout", labelsize='x-small')
-plt.rc("ytick", direction="inout", labelsize='x-small')
+plt.rc("xtick", direction="inout", labelsize="x-small")
+plt.rc("ytick", direction="inout", labelsize="x-small")
+
 
 def stem_plot(
     ax: plt.Axes, xd, yd, color="teal", markersize=6, linestyle="solid", label=None
@@ -17,7 +18,8 @@ def stem_plot(
     plt.setp(stemlines, color=color, linestyle=linestyle)
     plt.setp(markerline, markersize=markersize, color=color)
 
-def filter_2d(x1, hn, mode='full'):
+
+def filter_2d(x1, hn, mode="full"):
     """
     Filter a 2D image with the filter hn.
     """
@@ -37,6 +39,7 @@ def filter_2d(x1, hn, mode='full'):
         result[:, j] = np.convolve(result[:xM, j], hn, mode=mode)
 
     return result
+
 
 def upc_decode(bar_w):
     assert len(bar_w) == 59
@@ -77,9 +80,10 @@ def upc_decode(bar_w):
         result.append(idx[0] if len(idx) else -1)
     return result
 
+
 def decode_image(imagepath):
     """
-    Improved barcode reader that can read slanted images. 
+    Improved barcode reader that can read slanted images.
     """
     im = 1 - plt.imread(imagepath)
     # num rows and columns of image
@@ -104,7 +108,7 @@ def decode_image(imagepath):
         # difference filter on the location signal, in pixels
         delta_n = np.convolve(edge_loc_i, np.array([1, -1]))[:-1]
 
-        delta_n_rows[i, :len(delta_n)] = delta_n
+        delta_n_rows[i, : len(delta_n)] = delta_n
 
     # average the bar widths together from all rows
     delta_n = np.average(delta_n_rows, axis=0)
@@ -138,7 +142,7 @@ def decode_image(imagepath):
 
     ax1.legend(["$\Delta[n]$"], fontsize=11, loc="upper right", framealpha=1)
     ax2.legend(["$\Delta_N[n]$"], fontsize=11, loc="upper right", framealpha=1)
-    
+
     for ax in (im1, ax1, ax2):
         ax.set_xticks([])
 

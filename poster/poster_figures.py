@@ -1,6 +1,8 @@
 """
 This script generates figures with larger text for the poster. Report has similar figures but formatted
 slightly differently.
+
+This file will run in jupyter but is not setup to work as a standalone python script.
 """
 from pathlib import Path
 import sys

@@ -1,13 +1,20 @@
-# Load the required libraries
+"""
+This script generates figures with larger text for the poster. Report has similar figures but formatted
+slightly differently.
+
+This file will run in jupyter but is not setup to work as a standalone python script.
+"""
+from pathlib import Path
+import sys
+sys.path.append(str(Path.cwd() / "../").replace("\\", r"\\"))
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pathlib import Path
 from IPython import display
 from cycler import cycler
 
-from lab10.utils import stem_plot, upc_decode, decode_image
-from lab9.lab9_defs import stem_plot, filter_2d
+from utils import stem_plot, upc_decode, decode_image, filter_2d
 from scipy.io import loadmat, wavfile
 
 default_cycler = cycler(color=["teal", "m", "y", "k"])
@@ -16,7 +23,8 @@ plt.rc("xtick", direction="inout", labelsize="large")
 plt.rc("ytick", direction="inout", labelsize="large")
 plt.rc("axes", labelsize="large", titlesize="xx-large")
 
-fig_dir = Path(__file__).parent / "img/figures"
+fig_dir = Path(__file__).parent / "figures"
+data_dir = Path(__file__).parent / "../data"
 
 
 def fig_9_31():
@@ -91,7 +99,7 @@ def fig_9_32():
     h2_n = r**n
 
     # load image file
-    echart = loadmat("lab9/data/echart.mat")["echart"]
+    echart = loadmat(data_dir / "echart.mat")["echart"]
 
     # normalize so image max is 1
     echart = 1 - (echart / 255)
@@ -205,7 +213,7 @@ def fig_10_31():
 
 
 def fig_10_32():
-    imagepath = "lab10/data/HP110v3.png"
+    imagepath = data_dir / "HP110v3.png"
     im = 1 - plt.imread(imagepath)
 
     # x and y vectors along image [pixels]
@@ -322,7 +330,7 @@ def fig_10_32():
     plt.tight_layout()
     fig.savefig(fig_dir / "fig_10_32g.svg")
 
-    imagepath = "lab10/data/OFFv3.png"
+    imagepath = data_dir / "OFFv3.png"
     decode_image(imagepath)
     fig = plt.gcf()
     _, ax1, ax2 = fig.axes

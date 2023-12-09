@@ -12,8 +12,8 @@ This project is implemented in Python 3.11. To install the dependencies for this
 4. In the newly created environment, install the required packages from the requirements.txt file included with the project files.  
 `(.venv) > pip install -r requirements.txt`
 
-5. Open the report with Jupyter Notebooks.  
-`(.venv) > jupyter notebook report.ipynb`  
+5. Open the reports with Jupyter Notebooks.  
+`(.venv) > jupyter notebook <exercise_path>/main.ipynb`  
 
 7. To generate the .html version of the report,  
-`(.venv) > jupyter nbconvert --to html report.ipynb`
+`(.venv) > jupyter nbconvert --to html <exercise_path>/main.ipynb`

@@ -13,7 +13,7 @@ This project is implemented in Python 3.11. To install the dependencies for this
 `(.venv) > pip install -r requirements.txt`
 
 5. Open the report with Jupyter Notebooks.  
-`(.venv) > jupyter notebook report.ipynb`  
+`(.venv) > jupyter notebook main.ipynb`  
 
 7. To generate the .html version of the report,  
-`(.venv) > jupyter nbconvert --to html report.ipynb`
+`(.venv) > jupyter nbconvert --to html main.ipynb`

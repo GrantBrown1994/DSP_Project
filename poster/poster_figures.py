@@ -6,7 +6,6 @@ This file will run in jupyter but is not setup to work as a standalone python sc
 """
 from pathlib import Path
 import sys
-sys.path.append(str(Path.cwd() / "../").replace("\\", r"\\"))
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +23,7 @@ plt.rc("ytick", direction="inout", labelsize="large")
 plt.rc("axes", labelsize="large", titlesize="xx-large")
 
 fig_dir = Path(__file__).parent / "figures"
-data_dir = Path(__file__).parent / "../data"
+data_dir = Path(__file__).parent / "data"
 
 
 def fig_9_31():
